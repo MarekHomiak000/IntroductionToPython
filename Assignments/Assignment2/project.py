@@ -32,28 +32,19 @@ class Project:
             emp.curr_project = None
         self.manager.curr_project = None
 
-        self.company.active_projects.remove(self)
+        # odstránenie z active_projects cez identitu
+        self.company.active_projects = [p for p in self.company.active_projects if p is not self]
+
         self.company.finished_projects.append(self)
 
     def get_income(self):
-        client_order_count = {}
-        #zisk
-        project_price = 0
+        # zisk pre tento projekt
+        client = self.order.get_client_name()
+        client_order_count = sum(1 for p in self.company.finished_projects if p.order.get_client_name() == client)
 
-        for project in self.company.finished_projects:
-            client = project.order.get_client_name()
-            client_order_count[client] = client_order_count.get(client, 0) + 1
-        
-        for project in self.company.finished_projects:
-            order = project.order
-            client = order.get_client_name()
-            price = order.get_offer()
-
-            if client_order_count[client] >= 3:
-                project_price += price * 1.5
-            else:
-                project_price += price
-
+        offer = self.order.get_offer()
+        if client_order_count >= 3:
+            offer *= 1.5
 
         dev_time = self.manager.get_project_time(self.order.get_stages()["development"])
         test_time = self.manager.get_project_time(self.order.get_stages()["testing"])
@@ -71,24 +62,22 @@ class Project:
         one_tester_hours = ceil(test_time / n_of_testers)
         one_dev_hours = ceil(dev_time / n_of_devs)
 
-        #naklady
         total_wages = (one_tester_hours * testers_wage) + (one_dev_hours  * devs_wage)
-        #print(f"wages: {total_wages}")
 
-        #naklady na projektoveho manazera
         manager_hours = ceil((dev_time + test_time) / (n_of_devs + n_of_testers))
         manager_wage = self.manager.get_wage() * manager_hours
-        #print(f"project manager: {manager_wage}")
 
-
-        offer = self.order.get_offer()
         total_expenses = manager_wage + total_wages
         income = offer - total_expenses
 
         return income
+
     
     def get_client_name(self):
         return self.order.get_client_name()
+    
+    def get_order(self):
+        return self.order
     
     def __str__(self):
         emp_names = [emp.name for emp in self.employees]
@@ -96,6 +85,18 @@ class Project:
 
     def __repr__(self):
         return f"Project for {self.order.get_client_name()}"
+    
+    def __eq__(self, other):
+        if not isinstance(other, Project):
+            return False
+        return (self.company == other.company and 
+                self.order == other.order and 
+                self.started == other.started)
+
+    def __hash__(self):
+        return hash((self.company, self.order, self.started))
+        
+
     
 
 

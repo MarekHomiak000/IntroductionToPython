@@ -7,9 +7,13 @@ class Employee:
         self.name = name
         self.level = validuj_level(level)
         self.wage = validuj_plat(wage, level)
+        self.curr_project = None
     
     def get_wage(self):
         return self.wage
+    
+    def get_curr_p(self):
+        return self.curr_project
     
     def __str__(self):
         return f"EMPLOYEE - Meno: {self.name}, level: {self.level}, wage: {self.wage}"
@@ -20,6 +24,9 @@ class Tester(Employee):
 
     def __str__(self):
         return f"TESTER - Meno: {self.name}, level: {self.level}, wage: {self.wage}"
+    
+    def __repr__(self):
+        return f"{self.name}"
 
 
 class Developer(Employee):
@@ -51,13 +58,16 @@ class Manager(Employee):
     
     def __str__(self):
         return f"MANAGER - Meno: {self.name}, level: {self.level}, wage: {self.wage}"
+    
+    def __repr__(self):
+        return f"{self.name}"
 
 
 
 
 def validuj_plat(wage, level):
         if not isinstance(wage, (int, float)):
-            raise TypeError(f"Incorrect wage type {type(wage)}")
+            raise TypeError(f"Incorrect wage type: {type(wage)}")
         
         min_wage, max_wage = wages_dict[level]
         if wage < min_wage or wage > max_wage:
